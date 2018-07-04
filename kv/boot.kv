@@ -1,0 +1,20 @@
+<BootScreen>:
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba:1,1,1,1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source:'web/images/boot.png'
+        Label:
+            text:root.tempo
+            color: .4,.4,.3,1
+            font_size:'60dp'
+            outline_width:2
+            outline_color:0.7,0.7,0.3,1
+            size_hint:[None,None]
+            pos_hint:{"center_x":.67,"top":.53}
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}

@@ -1,0 +1,34 @@
+#: kivy 1.10.0
+
+<Manager>:
+    id: screen_manager
+    
+    main_screen:main_screen
+    min_screen:min_screen
+    meteo_screen:meteo_screen
+    boot_screen:boot_screen
+    summer_screen:summer_screen
+    
+    BootScreen:
+        id: boot_screen
+        name: 'boot'
+        manager: 'screen_manager'
+    MainScreen:
+        id: main_screen
+        name: 'main'
+        manager: 'screen_manager'
+    
+    MinScreen:
+        id: min_screen
+        name: 'minimize'
+        manager: 'screen_manager'
+    
+    MeteoScreen:
+        id: meteo_screen
+        name: 'meteo'
+        manager: 'screen_manager'
+    
+    SummerScreen:
+        id: summer_screen
+        name:'summer'
+        manager:'screen_manager'

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>ThermoGraph</title>
+	<meta name="GENERATOR" content="mcedit">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="Keywords" content="termoregolatore, thermo, temperatura, python">
+	<meta id="viewport" name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta name="Author" content="Jpnos">
+	<script src="/javascript/jquery-1.11.3.min.js"></script>
+	<script src="/javascript/dygraph-combined.js"></script>
+
+<script type="text/javascript">
+ var data;
+ var access
+ jQuery.ajaxSetup({async:false});
+ $(document).ready(function() {
+        console.log("partito....");
+        setTimeout (function(){
+	console.log("ci entro")
+	var c;
+	var results=[];
+	var conta = 0
+	var finalet=[];
+	var finaleu=[];
+	var finalep=[];
+	for (c=0; c<=6;c++){
+		access="/graph/thermostat"+c+".csv";
+		$.get(access, function(data) {
+			var lines = data.split('\n');
+			var i = 0;
+			var index_results = results.length;
+			for(i=0; i<lines.length-1; i++)
+			{
+				var linea = lines[i].toString();
+				var linea1=linea.split(',');
+				results[i+index_results]=linea1;
+			}
+		}, "text");
+            }
+        results.sort();
+        for (d = 0; d<=results.length-1;d++){
+            if (results[d].length>= 2){
+                lineat=results[d][0]+","+results[d][1]+","+results[d][2]+","+results[d][3]+"\r\n";
+                finalet +=lineat;
+                    }
+                }
+	gt = new Dygraph(document.getElementById("graphdivt"),
+		finalet,
+		{
+			title: 'Grafico Temperatura ',
+			ylabel: '°c' ,
+			xlabel: 'Time',
+			labels:["Time","set Temp °c","Temperatura °c","stato"],
+			labelsSeparateLines: true,
+                        series: {
+                            "set Temp °c": { showInRangeSelector: true },
+                            "Temperatura °c": { showInRangeSelector: true }
+                            },
+			legend: 'always',
+			rangeSelectorHeight: 80,
+			strokeWidth:2,
+			yRangePad: '100',
+			xRangePad: '10',
+			colors: ['#00cc00','#0066ff', '#ff9900'],
+			showRangeSelector: true,
+                        rangeSelectorPlotFillColor: '#0073e6',
+                        rangeSelectorPlotFillGradientColor: 'rgba(123, 104, 238, 0)',
+			labelsDiv: document.getElementById("labels")
+		} );
+		document.getElementById("dialog").style.display = "none";
+        });
+ });
+</script>
+
+</head>
+<body bgcolor = "#d0d0f0">
+<title>Temperature Graphic</title>
+<div id="dialog" align="center" >
+ <font color=#0039e6 size= 5 face="Courier">
+ <marquee bgcolor=#ff6666 loop=-1 behavior= alternate direction=left height=50 width=500 scrollamount=3 scrolldelay=10 align=middle> Attendere ...... Carico i dati </marquee>
+</div>
+<table align = center>
+    <tr>
+        <td valign=top><div id="graphdivt" style="width:800px; height:400px; font-family:Comfortaa; background-color:#eee; padding:0.1em 0.1em 0em 0.1em; border: 1px solid black; margin: 0 auto; "></div></td>
+    </tr>
+    
+    <tr>
+        <td valign=top><div id="labels" style="width:800px; height:100px; font-family:Comfortaa; background-color:#eee; padding:0.1em 0.1em 0em 0.1em; border: 1px solid black; font-size:12pt; margin: 0 auto; "></div></td>
+    </tr>
+    <tr>
+        <td valign=top align=center ><div id="testo" style="width:320px; height:100px; font-family:Comfortaa; margin: 0 auto; font-size:14px; ">
+            <form action="/">
+                <input type="submit" value="Thermostat Home " />
+            </form>
+    </tr>
+</table>
+<iframe style="display: none;" src="/logger" seamless></iframe>
+</body>
+</html>

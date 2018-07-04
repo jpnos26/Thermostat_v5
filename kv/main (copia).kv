@@ -1,0 +1,201 @@
+
+
+<MainScreen>: 
+    main_time:main_time
+    main_date:main_date
+    main_setTemp:main_setTemp
+    main_temp:main_temp
+    main_auto:main_auto
+    main_noice:main_noice
+    main_manual:main_manual
+    FloatLayout:
+        on_touch_down: root.anti_minimize()
+        on_touch_up:root.minify(*args)
+        canvas.before:
+            Color:
+                rgba:1,1,1,1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source:'web/images/sfondo.png'
+        Button:
+            size_hint:None,None
+            size:48,48
+            pos_hint:{"center_x":.95,"top":.99}
+            allow_stretch: True
+            keep_ratio: False
+            background_normal: 'web/images/off.png'
+            background_down: 'web/images/sistema1_1.png'
+            on_press:root.press_off()
+        Button:
+            size_hint:None,None
+            size:48,48
+            pos_hint:{"center_x":.85,"top":.99}
+            allow_stretch: True
+            keep_ratio: False
+            background_normal: 'web/images/sole.png'
+            background_down: 'web/images/sistema1_1.png'
+            on_press:root.press_estate()
+        ToggleButton:
+            text: 'Auto'
+            id:main_auto
+            state:'normal'
+            font_size:'30dp'
+            group: 'Switch'
+            pos_hint:{"center_x":.3,"top":.3}
+            size_hint:0.15,0.15
+            background_normal: 'web/images/pulsante_switch.png'
+            background_down: 'web/images/pulsante_switch_1.png'
+            on_press: root.update_schema(1)
+        ToggleButton:
+            text: 'Man'
+            id:main_manual
+            state:'normal'
+            font_size:'30dp'
+            group: 'Switch'
+            pos_hint:{"center_x":.5,"top":.3}
+            size_hint:0.15,0.15
+            background_normal: 'web/images/pulsante_switch.png'
+            background_down: 'web/images/pulsante_switch_1.png'
+            on_press: root.update_schema(2)
+        ToggleButton:
+            text: 'NoIce'
+            id:main_noice
+            state:'normal'
+            font_size:'30dp'
+            group: 'Switch'
+            size_hint:0.15,0.15
+            pos_hint:{"center_x":.7,"top":.3}
+            background_normal: 'web/images/pulsante_switch.png'
+            background_down: 'web/images/pulsante_switch_1.png'
+            on_press: root.update_schema(3)
+        Label:
+            text:"[b]19.1°[/b]"
+            color:0,0,0.1,1
+            font_size:'100dp'
+            outline_width:2
+            outline_color:0.8,0.9,0,1
+            halign:'center'
+            id:main_temp
+            size_hint:0.4,0.4
+            pos_hint:{"center_x":.51,"top":.85}
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+        Label:
+            text:root.main_umidita
+            color: 0.8,0,1,1
+            font_size:'20dp'
+            size_hint:0.4,0.4
+            pos_hint:{"center_x":.75,"top":.9}
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+        Label:
+            id:main_date
+            text:"[b]12/04/2018[/b]"
+            color:0.9,0.5,0.3,1
+            outline_width:1
+            outline_color:0.1,0.1,0.1,1
+            font_size:'25dp'
+            size_hint:[None,None]
+            pos_hint:{"center_x":.14,"top":1.07}
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+        Label:
+            id:main_time 
+            text:'10.20'
+            color: 0.1,0.1,0.1,1
+            font_size:'50dp'
+            size_hint:[None,None]
+            pos_hint:{"center_x":.5,"top":1.03}
+            outline_width:2
+            outline_color:0.9,0.5,0.3,1
+            halign:'center'
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+        MySlide:
+            id:main_setTemp
+            value:15
+            min:15
+            max:25
+            step:0.1
+            size_hint_y: None
+            size_hint_x: .9
+            width: '380dp'
+            pos:[40,150]
+            orientation: 'horizontal'
+            cursor_image:'web/images/slider1.png' if root.slider_color == 0 else 'web/images/slider1_1.png'
+            cursor_size:(90,40)
+            background_horizontal:'web/images/slider.png'
+        Button:
+            size_hint:None,None
+            size:200,150
+            pos_hint:{"center_x":.14,"top":.92}
+            allow_stretch: True
+            keep_ratio: False
+            background_normal: 'web/images/meteo.png'
+            on_press:app.root.current = 'meteo'
+        Image:
+            size_hint:None,None
+            size:48,48
+            pos_hint:{"center_x":.14,"top":.92}
+            source:root.main_meteo
+            allow_stretch: True
+            keep_ratio: False
+        Label:
+            text:root.main_meteo_text
+            color: 1,0.8,.8,1
+            font_size:'16dp'
+            size_hint:[None,None]
+            pos_hint:{"center_x":.14,"top":.84}
+            halign:'center'
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+        Label:
+            text:root.main_caldaia
+            color: 1,0.8,0.8,1
+            font_size:'20dp'
+            size_hint:[None,None]
+            pos:[200,0]
+            markup: True
+            halign:'center'
+            valign:'bottom'
+            
+        Label:
+            text:root.main_explain
+            color: 1,0.8,0.8,1
+            pos_hint:{"center_x":.5,"top":.1}
+            size: (800,20) 
+            size_hint: None, None 
+            font_size:'20dp'
+            markup: True
+            halign:'center'
+            valign:'bottom' 
+        Label:
+            text:root.main_explain_dht
+            color: 1,0.8,0.8,1
+            pos_hint:{"center_x":.09,"top":.35}
+            size: self.texture_size 
+            size_hint: None, None 
+            size:(50,100)
+            markup: True
+            halign:'left'
+            valign:'bottom' 
+        
+            
+<MySlide@Slider>:
+    Label:
+        pos: (root.value_pos[0] - sp(2), root.center_y - sp(14)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+        size_hint: None, None
+        size: sp(32), sp(32)
+        font_size:'24dp'
+        color:(1,1,0.5,1) 
+        outline_width:1
+        outline_color:0.1,0.1,0.1,1
+        text: "[b]"+str(round(root.value,1))+"[/b]"
+        markup:True
+        

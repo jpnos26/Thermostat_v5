@@ -1,0 +1,71 @@
+{
+    "calibration": {
+    	"boilingMeasured": 99.998043,
+    	"elevation": 500,
+    	"freezingMeasured": 0.0,
+		"correctSensor":0
+    },
+    "logging": {
+        "channel": "file",
+        "level": "error"
+    },
+    "pir": {
+        "pirCheckInterval": 0.5,
+        "pirEnabled": 0,
+        "pirIgnoreFrom": "00:00",
+        "pirIgnoreTo": "00:00",
+        "pirPin": 5
+    },
+    "scale": {
+        "tempScale": "metric"
+    },
+    "thermostat": {
+        "lightPin": 24,
+        "heatPin": 27,
+        "coolPin": 18,
+        "maxTemp": 25.0,
+        "sensTemp": 2,
+        "sensPin":6,
+        "minTemp": 15.0,
+        "minUIEnabled": 1,
+        "minUITimeout": 30,
+        "tempCheckInterval": 5,
+        "tempHysteresis": 0.3,
+        "tempStep": 0.5,
+	"tempice": 16,
+	"lightOff": 40,
+	"user" : "a",
+	"pass" : "a",
+	"saveCsv": 300,
+	"openDoor":300,
+	"checkPin":0
+    },
+    "weather": {
+        "appkey": "weather key",
+        "forecastRefreshInterval": 60,
+        "location": "44.111367, 9.963093",
+        "weatherExceptionInterval": 5,
+        "weatherRefreshInterval": 60,
+        "URLtimeout": 5
+    },
+    "web": {
+        "host": "discover",
+        "port": 80,
+        "key" :"/etc/ssl/cherrypy/cherrypy.key",
+        "cert":"/etc/ssl/cherrypy/cherrypy.crt",
+        "auth": 0
+    },
+    "telegram":{
+    	"enabled":0,
+        "token":"telegram token",
+    	"pwd" : "telegram pwd",
+    	"timeout" : 100
+    	},
+    "upnp":{
+        "enabled":0,
+        "ext_port":3400,
+        "time":100
+        }
+    	
+    	
+}

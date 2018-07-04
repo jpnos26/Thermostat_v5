@@ -1,0 +1,63 @@
+
+#:import math math
+
+[ClockNumber@Label]:
+    text: str(ctx.i)
+    pos_hint: {"center_x": 0.5+0.42*math.sin(math.pi/6*(ctx.i-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(ctx.i-12))}
+    color: .2,0.5,.5,.4
+    font_size:'25dp'
+
+<MinScreen>:
+    face: face
+    ticks: ticks
+    label_data:label_data
+    FloatLayout:
+        id: face
+        size_hint: None, None
+        pos_hint: {"center_x":0.5, "center_y":0.5}
+        size: 0.9*min(root.size), 0.9*min(root.size)
+        on_touch_down: root.return_screen()
+        canvas:
+            Color:
+                rgba: 0, 0, 0,.4
+            Ellipse:
+                size: self.size     
+                pos: self.pos
+        ClockNumber:
+            i: 1
+        ClockNumber:
+            i: 2
+        ClockNumber:
+            i: 3
+        ClockNumber:
+            i: 4
+        ClockNumber:
+            i: 5
+        ClockNumber:
+            i: 6
+        ClockNumber:
+            i: 7
+        ClockNumber:
+            i: 8
+        ClockNumber:
+            i: 9
+        ClockNumber:
+            i: 10
+        ClockNumber:
+            i: 11
+        ClockNumber:
+            i: 12
+        Label:
+            id:label_data
+            text:root.min_data
+            color: .8,0.7,1,.4
+            font_size:'18dp'
+            size_hint:None,None
+            
+            halign: 'left'
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+    Ticks:
+        id: ticks
+        r: min(root.size)*0.9/2

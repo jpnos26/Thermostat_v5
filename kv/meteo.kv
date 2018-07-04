@@ -1,0 +1,120 @@
+<MeteoScreen>:
+
+    GridLayout:
+        cols: 3
+        rows:5
+        orientation: 'horizontal'
+        row_default_height: 50
+        padding: [20,10,20,10]
+        spacing: [5,5]
+        on_touch_down: root.main_return(0.1)
+        Label:
+            size_hint:1,0.1
+            
+        Label:
+            text:"Previsioni Meteo "
+            color:0,0,0.1,1
+            font_size:'36dp'
+            outline_width:2
+            outline_color:0.8,0.5,0,1
+            halign:'center'
+            id:main_temp
+            size_hint:1,0.1
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True} 
+        Label:
+            size_hint:1,0.1
+        Label:
+            text:root.day1
+            color:1,1,1,1
+            font_size:'18dp'
+            halign:'center'
+            id:main_temp
+            size_hint:0.33,0.1
+          
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}    
+        Label:
+            text:root.day2
+            color:1,1,1,1
+            font_size:'18dp'
+            halign:'center'
+            id:main_temp
+            size_hint:0.33,0.1
+        
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}    
+        Label:
+            text:root.day3
+            color:1,1,1,1
+            font_size:'18dp'
+            halign:'center'
+            id:main_temp
+            size_hint:0.33,0.1
+          
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}    
+        
+        Image:
+            id: image1
+            source: root.image1
+            size_hint:0.33,0.2
+            texture: self.texture
+            size: self.texture_size
+        
+        Image:
+            id: image2
+            source: root.image2
+            size_hint:0.33,.2
+            texture: self.texture
+            size: self.texture_size
+        
+        Image:
+            id: image3
+            source: root.image3
+            size_hint:0.33,.2
+            texture: self.texture
+            size: self.texture_size
+            
+        Label:
+            text:root.label1
+            color:1,1,1,1
+            font_size:'16dp'
+            halign:'center'
+            id:main_temp
+            text_size: self.width, None
+            size_hint: 1, None
+            height: self.texture_size[1]
+            pos_hint:{"center_x":.50,"top":.5}
+            markup: True
+
+        Label:
+            text:root.label2
+            color:1,1,1,1
+            font_size:'16dp'
+            halign:'center'
+            id:main_temp
+            text_size: self.width, None
+            size_hint: 1, None
+            height: self.texture_size[1]
+            pos_hint:{"center_x":.50,"top":.5}
+            markup: True
+            
+        Label:
+            text:root.label3
+            color:1,1,1,1
+            font_size:'16dp'
+            halign:'center'
+            id:main_temp
+            text_size: self.width, None
+            size_hint: 1, None
+            height: self.texture_size[1]
+            pos_hint:{"center_x":.50,"top":.5}
+            markup: True
+
+            
+       

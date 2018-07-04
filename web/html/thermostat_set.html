@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+  		<meta charset="utf-8">
+  		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  		<meta id="viewport" name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  		<meta http-equiv="refresh" content="5;url=/">
+		<script src="../javascript/jquery-1.11.3.min.js"></script>        
+		
+        <title>Thermostat Web Interface: Settings Submitted</title>
+    </head>
+    <body bgcolor = "#d0d0f0">
+		<div align="center">
+				<table width="360px" border=double frame="box" rules="none" cellpadding="10" cellspacing="0" >
+					<tr>
+						<td valign="center" align="center" width="60px"><img src="/images/logo.png" width="50px" height="50px"></td>	
+						<td valign="center" align="center"><b>Thermostat @@version@@ Settings submitted...<br><br>@@dt@@</b></td>
+					<tr>
+						<td><b>Temp:</b></td>
+						<td align="center">@@temp@@</td>
+					</tr>
+					<tr>
+						<td><b>Programma:</b></td>
+						<td align="center">@@programma@@</td>
+					</tr>
+
+					<tr>
+						<td><b>Stato:</b></td>
+						<td align="center">@@stato@@</td>
+					</tr>
+				</table>
+			<table width="320px" border=double frame="box" rules="none"style="font-family:Comfortaa;">
+					<tr>	
+						<td width="60%">
+						<div id="countdown1" style="font-family:Comfortaa;">
+						<p>Sarai reindirizzato in:</p>
+						</td><td width="40%" style="font-family:Comfortaa; font-size:20pt;"></div>
+						<div id="countdown">
+						<div id="minutes" style="float:left; font-family:Comfortaa;">00</div>
+						<div style="float:left">:</div>
+						<div id="seconds" style="float:left; font-family:Comfortaa;">00</div>
+						</div>
+						</td>
+						</tr><tr>
+							<div id="aftercount" style="display:none; font-family:Comfortaa;">
+							<br >click here: <a href='/'>Thermostat home page</a></p>
+							</div>
+						</tr>
+					</tr>
+				</table>
+		</div>
+	<script type-"text/javascript">
+		var sTime = new Date().getTime();
+		var countDown = 5;
+		function UpdateTime() {
+		var cTime = new Date().getTime();
+		var diff = cTime - sTime;
+		var seconds = countDown - Math.floor(diff / 1000);
+		if (seconds >= 0) {
+		var minutes = Math.floor(seconds / 60);
+		seconds -= minutes * 60;
+		$("#minutes").text(minutes < 10 ? "0" + minutes : minutes);
+		$("#seconds").text(seconds < 10 ? "0" + seconds : seconds);
+		} else {
+			window.location = '/';
+			clearInterval(counter);
+			}
+		}
+		UpdateTime();
+		var counter = setInterval(UpdateTime, 500);
+	</script>
+    </body>
+</html>
