@@ -579,13 +579,7 @@ def change_system_settings():
                 aggiornaDht(0.1)
                 if row[1] == 0 and row[12] == 1:
                         con.execute("UPDATE data SET Switch = ? WHERE Id = ?",(0,1))
-                        salvaTempiTemp()
-        
-        #gr = str(min(schedule.jobs))[str(min(schedule.jobs)).find("(")+1:str(min(schedule.jobs)).find(")")]
-        #quote = gr.find("(")
-        #tipo = gr[quote+1:quote+4]
-        
-        #print  schedule.next_run().hour,":",schedule.next_run().minute,gr#,quote,tipo
+       
 ###### Salvataggio dei state per riavvio ##########################################################
 def save_state():
     try:
@@ -615,6 +609,8 @@ def save_graph(dt):
                 graphTemperature = row[10]
             elif row[8] ==3:
                 graphTemperature = row[2]
+            elif row[8] == 0:
+                graphTemperature = 0
             currentTemp = row[4]
         elif row[7] == 2:
             switchTemp = 0 if row[1] == 0 else -5
@@ -622,6 +618,8 @@ def save_graph(dt):
                 graphTemperature = row[3]
             elif row[8] == 2:
                 graphTemperature = row[10]
+            elif row[8] == 0:
+                graphTemperature = 0
             currentTemp = row[4]
 
         # scrivo il file csv con i dati
@@ -804,8 +802,6 @@ class MainScreen(Screen):
                 con.execute("Update data  SET StatoSistema = ?, ProgSistema = ?  WHERE Id = ?" ,(dato,1,1))
                 reloadSchedule()
                 Clock.schedule_once(self.crono,0)
-                Clock.schedule_interval(self.crono,3)
-                Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
                 change_system_settings()
                 aggiornaDht(0.1)
                 Clock.schedule_once(save_graph, .1)
@@ -820,8 +816,6 @@ class MainScreen(Screen):
             elif self.main_auto.state == "down":
                 con.execute("Update data SET SetTemp = ? , ManTemp = ? WHERE Id = ?" ,(registra,registra,1))
             Clock.schedule_once(self.crono,0)
-            Clock.schedule_interval(self.crono,3)
-            Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
             change_system_settings()
             aggiornaDht(0.1) 
             Clock.schedule_once(save_graph, .1)
@@ -836,7 +830,6 @@ class MainScreen(Screen):
             Clock.unschedule(self.minimize_screen)
             Clock.unschedule(self.crono)
             self.main_set_setTemp = self.main_setTemp
-            #Clock.schedule_interval(self.crono,3)
             
     def popup(self,dato):
         test1 = self.main_set_setTemp
@@ -1004,8 +997,6 @@ class SummerScreen(Screen):
                 con.execute("Update data  SET StatoSistema = ?, ProgSistema = ?  WHERE Id = ?" ,(dato,2,1))
                 reloadSchedule()
                 Clock.schedule_once(self.crono,0)
-                Clock.schedule_interval(self.crono,3)
-                Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
                 change_system_settings()
                 aggiornaDht(0.1)
                 Clock.schedule_once(save_graph, .1)
@@ -1020,8 +1011,6 @@ class SummerScreen(Screen):
             elif self.summer_auto.state == "down":
                 con.execute("Update data SET SetTemp = ? , ManTemp = ? WHERE Id = ?" ,(registra,registra,1))
             Clock.schedule_once(self.crono,0)
-            Clock.schedule_interval(self.crono,3)
-            Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
             change_system_settings()
             aggiornaDht(0.1) 
             Clock.schedule_once(save_graph, .1)
@@ -1031,7 +1020,7 @@ class SummerScreen(Screen):
         with thermostatLock:
             self.parent.current = 'minimize'
         
-    def anti_minimize(self, *args):
+    def anti_minimize(self):
         with thermostatLock:
             Clock.unschedule(self.minimize_screen)
             Clock.unschedule(self.crono)
@@ -1092,10 +1081,10 @@ class MinScreen(Screen):
     label_data = ObjectProperty()
     def on_pre_enter(self):
         self.label_data.pos = (60,50)
-        anim = Animation(pos=(630, 350), t='linear', d=200)
-        anim += Animation(pos=(60, 350), t='linear', d=200)
-        anim += Animation(pos=(630, 50), t='linear', d=200)
-        anim += Animation(pos=(60, 50), t='linear', d=200)
+        anim = Animation(pos=(630, 350), t='linear', d=100)
+        anim += Animation(pos=(60, 350), t='linear', d=100)
+        anim += Animation(pos=(630, 50), t='linear', d=100)
+        anim += Animation(pos=(60, 50), t='linear', d=100)
         anim.repeat = True
         anim.start(self.label_data)
     def on_enter(self):
