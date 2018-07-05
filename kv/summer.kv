@@ -5,7 +5,6 @@
     summer_auto:summer_auto
     summer_manual:summer_manual
     FloatLayout:
-        on_touch_down: root.anti_minimize(*args)
         canvas.before:
             Color:
                 rgba:1,1,1,1
@@ -184,6 +183,7 @@
             allow_stretch: True
             keep_ratio: False
             background_normal: 'web/images/meteo.png'
+            on_press:root.anti_minimize()
             on_release:Factory.SummerPop().open() if root.summer_state != 0 else root.update_schema(4)
         Label:
             text:root.summer_next
