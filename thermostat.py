@@ -48,6 +48,7 @@ from threading import Thread
 from functools import partial
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import logging
+import webbrowser
 
 ######  Kivy Imports ##############################################################################
 import kivy
@@ -66,13 +67,16 @@ from kivy.graphics import Color, Line, Rectangle
 from kivy.storage.jsonstore import JsonStore
 from kivy.uix.label import Label
 from kivy.animation import Animation
-
+from kivy.uix.label import Label
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.gridlayout import GridLayout
 
 Builder.load_file('kv/boot.kv')
 Builder.load_file('kv/main.kv')
 Builder.load_file('kv/min.kv')
 Builder.load_file('kv/meteo.kv')
 Builder.load_file('kv/summer.kv')
+
     
 ###### Other Imports ##############################################################################
 
@@ -107,7 +111,7 @@ urllib3_logger.setLevel(logging.CRITICAL)
 
 ###### Thermostat persistent settings #############################################################
 
-THERMOSTAT_VERSION = "5.0.2"
+THERMOSTAT_VERSION = "5.1.0"
 
 # Debug settings
 
@@ -358,9 +362,9 @@ if pirEnabled:
 
 ###### Inizializzo Database in memoria ############################################################
 if state.exists("state"):
-    dati_lavoro =[(0,18.0,state.get("state")["NoIce"],state.get("state")["setTemp"],state.get("state")["Programma"],state.get("state")["Stato"],state.get("state")["ManualTemp"],1)]
+    dati_lavoro =[(0,18.0,state.get("state")["NoIce"],state.get("state")["setTemp"],state.get("state")["Programma"],state.get("state")["Stato"],state.get("state")["ManualTemp"],0,1)]
 else :
-    dati_lavoro = [(0,16.0, 21.0,1,1,18,0,1,18.0)]
+    dati_lavoro = [(0,18.0,16.0, 16.0,1,1,18,0,1)]
 
 con = sqlite3.connect(":memory:", check_same_thread = False)
 
@@ -378,9 +382,10 @@ con = sqlite3.connect(":memory:", check_same_thread = False)
 ### 10 = ManTemp = Temperatura da mantenere in manuale
 ### 11 = SummerTemp = Temperatura da mantenere in Estate
 ### 12 = Switch = Inizio 1 - Fine 0 per calcolare controllo climatico
+### 13 = Meteo ora di lettura dei dati meteo
 
-con.execute("CREATE TABLE data(Id integer,Caldaia integer, NoIce real ,SetTemp real ,Temp real,Umidita real,Pressione real,ProgSistema integer,StatoSistema integer ,Tout real,ManTemp real,SummerTemp real,Switch integer)")
-con.executemany("INSERT INTO data(Caldaia,Temp,NoIce,SetTemp,ProgSistema,StatoSistema,ManTemp,Id) values (?,?,?, ?,?,?,?,?)", dati_lavoro)
+con.execute("CREATE TABLE data(Id integer,Caldaia integer, NoIce real ,SetTemp real ,Temp real,Umidita real,Pressione real,ProgSistema integer,StatoSistema integer ,Tout real,ManTemp real,SummerTemp real,Switch integer,Meteo real)")
+con.executemany("INSERT INTO data(Caldaia,Temp,NoIce,SetTemp,ProgSistema,StatoSistema,ManTemp,Meteo,Id) values (?,?,?,?,?,?,?,?,?)", dati_lavoro)
 
 
 ###Creo table periferiche dht #########################################################################
@@ -391,18 +396,21 @@ con.executemany("INSERT INTO data(Caldaia,Temp,NoIce,SetTemp,ProgSistema,StatoSi
 ### 4 = UmiditaLetta = Umidita Letta da DHT
 ### 5 = PressioneLetta = Pressione Letta da DHT
 ### 6 = setTemp = Temperatura da Impostare per i DHT
-### 7 = TipoDht = Tipo di DHT 0 = temp ext ; 1 = Zona ; 2 = IR ; 3 = Stanza Fredda solo Dati ; 4 = Zona + Stanza Fredda ; 5 = rele
+### 7 = TipoDht = Tipo di DHT 0 = temp ext ; 1 = Rele ; 2 = dati completi  ; 3 = Solo Visualizzazione
 ### 8 = Progressivo = 0 valore Aggiornato da DHT ogni altro numero fino a x vuol dire che non si aggiorna il DHT a 10 lo cancello
 ### 9 = StatoDht = 0 temperatura raggiunta 1 Temperatura da raggiungere
 ### 10 = StatoSistema = 0 = spento ; 1 =  acceso ; 
 con.execute("CREATE TABLE periferiche(Id text,Nome text,Ip text,TempLetta real,UmiditaLetta real,PressioneLetta real,SetTemp real,TipoDht integer,StatoDht integer,StatoSistema integer,Progressivo integer)")
-#for c in range(1,10):
-#        if c<6:
-#            d = c
-#        elif c>5 and c<11:
-#            d = c/2
-#        table_dht=[(c,"test"+str(c),"192.168.1.1",20.0,0,0,16.0,0,d,0,0)]
-#        con.executemany("insert into periferiche(Id ,Nome ,Ip ,TempLetta ,UmiditaLetta ,PressioneLetta ,SetTemp ,Progressivo ,TipoDht ,StatoDht,StatoSistema ) values (?,?,?,?,?,?,?,?,?,?,?)",table_dht)
+for c in range(1,12):
+    #if c<6:
+        #d = c
+    #elif c>5 and c<12:
+        #d = c/2
+    d=random.randint(2, 3)
+    p= random.randint(16, 28)
+    t = random.randint(16, 28)
+    table_dht=[(c,"test"+str(c),"192.168.1.1",p,45.0,1021,t,0,d,0,0)]
+    con.executemany("insert into periferiche(Id ,Nome ,Ip ,TempLetta ,UmiditaLetta ,PressioneLetta ,SetTemp ,Progressivo ,TipoDht ,StatoDht,StatoSistema ) values (?,?,?,?,?,?,?,?,?,?,?)",table_dht)
 
 ###Creo table periferiche rele #########################################################################
 ### 0 = Id = Identificativo
@@ -505,7 +513,7 @@ def change_system_settings():
             test_temp = 0
         data_main = con.execute("SELECT * FROM data WHERE Id == 1")
         for row in data_main.fetchall():
-            # row
+            #print row
             setT = row[3]
             temp = row[4]
             noIce = row[2]
@@ -514,17 +522,12 @@ def change_system_settings():
             manTemp = row[10]
             caldaia_pre = row[1]
             summer = row[11]
-        dht_main = con.execute("SELECT * FROM periferiche WHERE TipoDht == 1 OR TipoDht == 3 OR TipoDht == 4")
-        statoDht = 0
-        for row in dht_main:
-            if row[9] == 1:
-                statoDht = 1
         dht_main = con.execute("SELECT * FROM periferiche WHERE TipoDht == 2")
-        statoDhtSummer = 0
+        statoDht = 0
         for row in dht_main:
             ## row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9]
             if row[9] == 1:
-                statoDhtSummer = 1
+                statoDht = 1
         if programma == 1 and stato == 1:
             if setT >= temp + tempHysteresis or statoDht == 1:
                 GPIO.output(heatPin, GPIO.LOW)
@@ -553,14 +556,14 @@ def change_system_settings():
                 con.execute("UPDATE data SET Caldaia = ? WHERE Id = ?",(0,1))
                 con.execute("UPDATE periferiche SET StatoDht = ? WHERE TipoDht = ?",(0,5))
         elif programma == 2 and stato == 1:
-            if setT <= temp + tempHysteresis or statoDhtSummer == 1:
+            if setT <= temp + tempHysteresis or statoDht == 1:
                 GPIO.output(coolPin, GPIO.LOW)
                 con.execute("UPDATE data SET Caldaia = ? WHERE Id = ?",(1,1))
             elif setT > temp :
                 GPIO.output(coolPin, GPIO.HIGH)
                 con.execute("UPDATE data SET Caldaia = ? WHERE Id = ?",(0,1))
         elif programma == 2 and stato == 2:
-            if manTemp <= temp + tempHysteresis or statoDhtSummer == 1:
+            if manTemp <= temp + tempHysteresis or statoDht == 1:
                 GPIO.output(coolPin, GPIO.LOW)
                 con.execute("UPDATE data SET Caldaia = ? WHERE Id = ?",(1,1))
             elif manTemp > temp :
@@ -577,6 +580,7 @@ def change_system_settings():
             if caldaia_pre <> row[1]:
                 save_graph(0.5)
                 aggiornaDht(0.1)
+                save_state()
                 if row[1] == 0 and row[12] == 1:
                         con.execute("UPDATE data SET Switch = ? WHERE Id = ?",(0,1))
        
@@ -641,7 +645,7 @@ def save_graph(dt):
 #### hei dht aggiornati !!!! ######################################################################
 
 def aggiornaDht(dt):
-    dht_aggiorna = con.execute("SELECT * FROM periferiche WHERE TipoDht == 1 OR TipoDht == 3 OR TipoDht == 4")
+    dht_aggiorna = con.execute("SELECT * FROM periferiche WHERE TipoDht == 2")
     for row in dht_aggiorna:
         t = Thread(target=dhtZoneSendThread(row[2]))
         t.start()
@@ -656,7 +660,7 @@ def dhtZoneSendThread(c):
 
     else:
         log(LOG_LEVEL_ERROR, CHILD_DEVICE_DHTZONE, MSG_SUBTYPE_CUSTOM + "/send/aggiorna: ",
-            str(c)+ " - Disabled", timestamp=False)
+           str(c)+ " - Disabled", timestamp=False)
 
 
 ###### il manager degli schermi ###################################################################
@@ -677,18 +681,18 @@ class MainScreen(Screen):
     main_setTemp = StringProperty()
     main_temp = ObjectProperty()
     main_auto = ObjectProperty()
-    main_noice = ObjectProperty()
     main_manual = ObjectProperty()
     main_meteo = StringProperty()
     main_meteo_text = StringProperty()
     main_caldaia = StringProperty()
     slider_color = NumericProperty()
     main_explain = StringProperty()
-    main_explain_dht = StringProperty()
     main_set_setTemp = StringProperty()
     main_state = NumericProperty()
     main_next = StringProperty()
     main_off = NumericProperty()
+    main_meteo_time = NumericProperty()
+    start_off = 0
     
     def on_pre_enter(self):
         Clock.schedule_once(self.crono,0)
@@ -714,7 +718,7 @@ class MainScreen(Screen):
             data_main = con.execute("select * from data where Id == 1")
             for row in data_main.fetchall():                
                 if (row[5] <> None):
-                    self.main_umidita = str(int(row[5]))+" %\n"+str(int(row[6]))+" mBar"
+                    self.main_umidita = str(int(row[5]))+" % - "+str(int(row[6]))+" mBar"
                 else:
                     self.main_umidita =""
                 self.main_temp.text = str(round(row[4],1))+"°"
@@ -722,26 +726,22 @@ class MainScreen(Screen):
                 if (row[8] == 1):
                     self.main_auto.state = 'down'
                     self.main_manual.state = 'normal'
-                    self.main_noice.state = 'normal'
                     self.main_setTemp = str(round(row[3],1))
                     self.main_next = "{:0>2d}".format(schedule.next_run().hour)+":"+"{:0>2d}".format(schedule.next_run().minute)+" --> "+str(min(schedule.jobs))[str(min(schedule.jobs)).find("(")+1:str(min(schedule.jobs)).find(")")]
                     self.main_state = 1
                 elif (row[8] == 2):
                     self.main_manual.state = 'down'
                     self.main_auto.state = 'normal'
-                    self.main_noice.state = 'normal'
                     self.main_setTemp = str(round(row[10],1))
                     self.main_next = ""
                     self.main_state = 1
                 elif (row[8] == 3):
-                    self.main_noice.state = 'down'
                     self.main_manual.state = 'normal'
                     self.main_auto.state = 'normal' 
-                    self.main_setTemp = str(round(row[2],1))
+                    self.main_setTemp = "[size=24]NoIce \n[/size]"+str(round(row[2],1))
                     self.main_next = ""
                     self.main_state = 2
                 else :
-                    self.main_noice.state = 'normal'
                     self.main_manual.state = 'normal'
                     self.main_auto.state = 'normal'
                     self.main_setTemp = "OFF"
@@ -751,46 +751,47 @@ class MainScreen(Screen):
                     self.main_programma = "OFF"
                 elif (row[7] == 1 ):
                     self.main_programma = "Inverno"
-            dht_main = con.execute("select * from periferiche WHERE TipoDht == 3 OR TipoDht == 4")
-            self.main_explain_dht = ""
-            for row in dht_main:
-                self.main_explain_dht += row[1] +"[b] : " + str(row[3]) + " c - " + str(row[4]) + " % [/b]\n" 
-                # row                                                   
+            self.dhtview.disegna_schermo()
+            # row                                                   
             ## timeb,self
             
     def meteo(self,*args):
-        try:
-            weatherLocation = settings.get("weather")["location"]
-            weatherAppKey = settings.get("weather")["appkey"]
-            weatherURLBase = "https://api.darksky.net/forecast/"
-            weatherURLTimeout = settings.get("weather")["URLtimeout"]
-            weatherURLCurrent = weatherURLBase + weatherAppKey + "/" + weatherLocation + "?units=si&exclude=[minutely,hourly,flags,alerts]&lang=it"
-            weatherExceptionInterval = settings.get("weather")["weatherExceptionInterval"] * 60
-            weatherRefreshInterval = settings.get("weather")["weatherRefreshInterval"] * 60
-            r = http.request('GET', weatherURLCurrent)
-            weather = json.loads(r.data.decode('utf-8'))
-            # weather
-            outt = 0
-            press = 0
-            umi = 0
-            out_main = con.execute("select * from periferiche where TipoDht == 0 OR TipoDht = 6")
-            for row in out_main:
-                if (row[3] > 0):
-                    outt = round(row[3],1)
-                if (row[4] > 0):
-                    umi = int(row[4])
-                if (row[5] > 0):
-                    press = int(row[5])
-            if (outt == 0):
-                outt = round(weather["currently"]["temperature"],1)
-            if (umi == 0):
-                umi = int(weather["currently"]["humidity"] *100)
-            if (press == 0):
-                press = int(weather["currently"]["pressure"])
-            self.main_meteo = "web/images/" + weather["currently"]["icon"] + ".png"
-            self.main_meteo_text =  "[b]" + weather["currently"]["summary"] + "[/b]\nT out:[b] "+str(outt)+"[/b] c\nUmidita: [b]"+str(umi)+" %[/b]\nPressione:[b] "+str(press)+"mBar[/b]"
-            with thermostatLock:
-                con.execute("Update data SET Tout = ? , Pressione = ?, Umidita = ? WHERE Id = ?",(outt,press,umi,1))
+        try: 
+            setMeteoInterval = 300 if not (settings.exists("thermostat")) else settings.get("weather")["weatherRefreshInterval"]
+            data_main = con.execute("select * from data where Id == 1")
+            for row in data_main.fetchall():
+                if time.time() -row[13] >= setMeteoInterval:
+                    weatherLocation = settings.get("weather")["location"]
+                    weatherAppKey = settings.get("weather")["appkey"]
+                    weatherURLBase = "https://api.darksky.net/forecast/"
+                    weatherURLTimeout = settings.get("weather")["URLtimeout"]
+                    weatherURLCurrent = weatherURLBase + weatherAppKey + "/" + weatherLocation + "?units=si&exclude=[minutely,hourly,flags,alerts]&lang=it"
+                    weatherExceptionInterval = settings.get("weather")["weatherExceptionInterval"] * 60
+                    weatherRefreshInterval = settings.get("weather")["weatherRefreshInterval"] * 60
+                    r = http.request('GET', weatherURLCurrent, timeout = 3)
+                    weather = json.loads(r.data.decode('utf-8'))
+                    # weather
+                    outt = 0
+                    press = 0
+                    umi = 0
+                    out_main = con.execute("select * from periferiche where TipoDht == 0")
+                    for row in out_main:
+                        if (row[3] > 0):
+                            outt = round(row[3],1)
+                        if (row[4] > 0):
+                            umi = int(row[4])
+                        if (row[5] > 0):
+                            press = int(row[5])
+                    if (outt == 0):
+                        outt = round(weather["currently"]["temperature"],1)
+                    if (umi == 0):
+                        umi = int(weather["currently"]["humidity"] *100)
+                    if (press == 0):
+                        press = int(weather["currently"]["pressure"])
+                    self.main_meteo = "web/images/" + weather["currently"]["icon"] + ".png"
+                    self.main_meteo_text =  "[b]" + weather["currently"]["summary"] + "[/b]\nT out:[b] "+str(outt)+"[/b] c\nUmidita: [b]"+str(umi)+" %[/b]\nPressione:[b] "+str(press)+"mBar[/b]"
+                    with thermostatLock:
+                        con.execute("Update data SET Tout = ? , Pressione = ?, Umidita = ?, Meteo = ? WHERE Id = ?",(outt,press,umi,time.time(),1))
         except:
             self.main_meteo = "web/images/na.png"
             log(LOG_LEVEL_ERROR, CHILD_DEVICE_WEATHER_CURR, MSG_SUBTYPE_TEXT, "Update FAILED!")
@@ -819,7 +820,10 @@ class MainScreen(Screen):
             change_system_settings()
             aggiornaDht(0.1) 
             Clock.schedule_once(save_graph, .1)
+            Clock.schedule_interval(self.crono,3)
+            Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
             save_state()
+
             
     def minimize_screen(self ,*args):
         with thermostatLock:
@@ -844,13 +848,27 @@ class MainScreen(Screen):
             self.main_set_setTemp = str(test3)
         else:
             self.main_set_setTemp = str(test_finale)
-       
+            
+    def press_off_time(self, *args):
+        if self.start_off <=3:
+            self.main_explain = "Setto NOICE ......"
+        elif self.start_off >=3 and self.start_off <=7:
+            self.main_explain = "Spengo il Sistema ......"
+        elif self.start_off >=8 :
+            self.main_explain = "Chiudo Thermostat Ritorno al Sistema Operativo ......"
+        self.start_off +=1
+        
     def press_off(self,dato):
         with thermostatLock:
             if dato == 1:
-                self.main_off = time.time()
+                Clock.unschedule(self.crono)
+                Clock.unschedule(self.minimize_screen)
+                Clock.schedule_once(self.press_off_time,0)
+                Clock.schedule_interval(self.press_off_time,1)
             elif dato == 2:
-                if time.time() - self.main_off >= 3:
+                Clock.unschedule(self.press_off_time)
+                print self.start_off
+                if self.start_off >= 8:
                     log(LOG_LEVEL_STATE, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/exit", "Thermostat exit on call...", single=True)
                     
                     if logFile is not None:
@@ -859,7 +877,9 @@ class MainScreen(Screen):
                         logFile.close()
                     
                     exit()  # This does not return!!!
-                else:
+                    
+                    
+                elif self.start_off >= 3 and self.start_off <= 7:
                     self.main_explain = "Spengo il sistema ......"
                     con.execute("UPDATE data SET StatoSistema =?, ProgSistema = ? WHERE Id = ?",(0,0,1))
                     change_system_settings()
@@ -869,6 +889,21 @@ class MainScreen(Screen):
                     Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
                     save_state()
                     
+                else  :
+                    self.main_explain = "Setto Noice......"
+                    con.execute("UPDATE data SET StatoSistema =?, ProgSistema = ? WHERE Id = ?",(3,1,1))
+                    change_system_settings()
+                    aggiornaDht(0.1)
+                    Clock.schedule_once(save_graph, .1)
+                    Clock.schedule_interval(self.crono,3)
+                    Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
+                    save_state()
+                Clock.schedule_once(self.crono,0)
+                Clock.schedule_once(save_graph, .1)
+                Clock.schedule_interval(self.crono,3)
+                Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
+                self.start_off = 0
+                
     def press_estate(self):
         with thermostatLock:
             con.execute("Update data SET ProgSistema = ?  WHERE Id = ?" ,(2,1))
@@ -876,7 +911,8 @@ class MainScreen(Screen):
             aggiornaDht(0.1)
             change_system_settings()
             self.parent.current = 'summer'
-            
+    
+        
 ###### la schermata per l'estate ##########################################################
 
 class SummerScreen(Screen):
@@ -892,11 +928,11 @@ class SummerScreen(Screen):
     summer_caldaia = StringProperty()
     summer_slider_color = NumericProperty()
     summer_explain = StringProperty()
-    summer_explain_dht = StringProperty()
     summer_set_setTemp = StringProperty()
     summer_state = NumericProperty()
     summer_next = StringProperty()
     summer_off = NumericProperty()
+    start_off = 0
     
     def on_pre_enter(self):
         Clock.schedule_once(self.crono,0)
@@ -921,7 +957,7 @@ class SummerScreen(Screen):
             data_summer = con.execute("select * from data where Id == 1")
             for row in data_summer.fetchall():                
                 if (row[5] <> None):
-                    self.summer_umidita = str(int(row[5]))+" %\n"+str(int(row[6]))+" mBar"
+                    self.summer_umidita = str(int(row[5]))+" % - "+str(int(row[6]))+" mBar"
                 else:
                     self.summer_umidita =""
                 self.summer_temp.text = str(row[4])+"°"
@@ -952,6 +988,7 @@ class SummerScreen(Screen):
             self.summer_explain_dht = ""
             for row in dht_summer:
                 self.summer_explain_dht += row[1] +"[b] : "+str(row[3])+"c[/b]\n"
+            self.dhtview.disegna_schermo()
             # row                                                   
         ## timeb,self
     def meteo(self,*args):
@@ -1014,6 +1051,8 @@ class SummerScreen(Screen):
             change_system_settings()
             aggiornaDht(0.1) 
             Clock.schedule_once(save_graph, .1)
+            Clock.schedule_interval(self.crono,3)
+            Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
             save_state()
             
     def minimize_screen(self ,*args):
@@ -1039,14 +1078,26 @@ class SummerScreen(Screen):
         elif test_finale >= test3:
             self.summer_set_setTemp = str(test3)
         else:
-            self.summer_set_setTemp = str(test_finale)   
+            self.summer_set_setTemp = str(test_finale)  
             
+    def press_off_time(self, *args):
+        if self.start_off <=5:
+            self.summer_explain = "Spengo il Sistema ......"
+        elif self.start_off >=5 :
+            self.summer_explain = "Chiudo Thermostat Ritorno al Sistema Operativo ......"
+        self.start_off +=1
+        
     def press_off(self,dato):
         with thermostatLock:
             if dato == 1:
-                self.summer_off = time.time()
+                Clock.unschedule(self.crono)
+                Clock.unschedule(self.minimize_screen)
+                Clock.schedule_once(self.press_off_time,0)
+                Clock.schedule_interval(self.press_off_time,1)
             elif dato == 2:
-                if time.time() - self.summer_off >= 3:
+                Clock.unschedule(self.press_off_time)
+                print self.start_off
+                if self.start_off >= 5:
                     log(LOG_LEVEL_STATE, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/exit", "Thermostat exit on call...", single=True)
                     
                     if logFile is not None:
@@ -1055,8 +1106,9 @@ class SummerScreen(Screen):
                         logFile.close()
                     
                     exit()  # This does not return!!!
-                else:
-                    self.summer_explain = "Spengo il sistema ......"
+                    
+                else  :
+                    self.main_explain = "Spengo Sistema......"
                     con.execute("UPDATE data SET StatoSistema =?, ProgSistema = ? WHERE Id = ?",(0,0,1))
                     change_system_settings()
                     aggiornaDht(0.1)
@@ -1064,6 +1116,11 @@ class SummerScreen(Screen):
                     Clock.schedule_interval(self.crono,3)
                     Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
                     save_state()
+                Clock.schedule_once(self.crono,0)
+                Clock.schedule_once(save_graph, .1)
+                Clock.schedule_interval(self.crono,3)
+                Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
+                self.start_off = 0
             
     def press_inverno(self):
         with thermostatLock:
@@ -1141,6 +1198,7 @@ class MeteoScreen(Screen):
     day1 = StringProperty()
     day2 = StringProperty()
     day3 = StringProperty()
+    
     def on_pre_enter(self):
         Clock.schedule_once(self.previsioni,0)
     def on_enter(self):
@@ -1264,6 +1322,66 @@ class Ticks(Widget):
             Color(0.4, 0.7, 0.4,0.2)
             th = time.hour*60 + time.minute
             Line(points=[self.center_x, self.center_y, self.center_x+0.5*self.r*sin(pi/360*th), self.center_y+0.5*self.r*cos(pi/360*th)], width=3, cap="round")
+
+###### dht page dynamically loaded ################################################################
+class Dhtview(Widget):
+    def __init__(self, **kwargs):
+        super(Dhtview, self).__init__(**kwargs)
+        self.bind(pos=self.disegna_schermo)
+        self.bind(size=self.disegna_schermo)
+        
+    def disegna_schermo(self,*args):
+        with thermostatLock:
+            self.canvas.clear()
+            dht_num = 0
+            dhtLabel = {}
+            dht_val = {}
+            dht_type = {}
+            dht_rect = {}
+            dht_x = 10
+            dht_y = 140
+            dht_sposta_x = 130
+            dht_sposta_y = 80
+            dhtS_main = con.execute("select * from periferiche where TipoDht == 2 OR TipoDht = 3")
+            for row in dhtS_main:
+                #print row
+                dht_num += 1
+                dhtLabel[dht_num,0] = Label(text=row[1], size_hint=(None, None), font_size='14sp', markup=True, size=(120, 20),
+                                 color=(1, 1, 1, 1),pos = (dht_x,dht_y),text_size = (120,20), halign="center")
+                dhtLabel[dht_num,1] = Label(text="[b]"+str(row[3])+"°[/b] - "+str(row[4])+"%", size_hint=(None, None), font_size='18sp', markup=True, size=(120, 20),
+                                 color=(1, 1, 1, 1),pos = (dht_x,(dht_y-25)),text_size = (120,20), halign="center")
+                dhtLabel[dht_num,3] = Label(text="Set : [b]"+str(row[6])+"°[/b]", size_hint=(None, None), font_size='16sp', markup=True, size=(120, 20),
+                                 color=(1, 1, 1, 1),pos = (dht_x,(dht_y-50)),text_size = (120,20), halign="center")
+                dht_rect[dht_num,0] = dht_x -2
+                dht_rect[dht_num,1] = dht_y +22
+                dht_x = dht_x+dht_sposta_x
+                if row[6] >= row[3] :
+                    dht_val[dht_num,0] = 1 
+                else:
+                    dht_val[dht_num,0] = 0    
+                if dht_num == 6 :
+                    dht_x = 10
+                    dht_y = dht_y -dht_sposta_y
+                dht_type[dht_num] = row[7]
+            for c in range(1,dht_num+1):
+                #print c
+                with self.canvas:
+                    with dhtLabel[c,0].canvas.before:
+                        Rectangle(pos=(dht_rect[c,0],dht_rect[c,1]), size=(124,-72),source='web/images/rect.png')
+                        if dht_type[c] == 2:
+                            Color(0.956, 0.498, 0.121,0.7)
+                        else :
+                            Color(0.027, 0.133, 0.713,0.7)
+                        Rectangle(pos=dhtLabel[c,0].pos, size=dhtLabel[c,0].size)
+                    with dhtLabel[c,3].canvas.before:
+                        if dht_val[c,0]== 0:
+                            Color(0.066, 0.917, 0.043, 1) 
+                        else:
+                            Color(0.839, 0, 0.152, 1)
+                    Rectangle(pos=dhtLabel[c,3].pos, size=dhtLabel[c,3].size)
+                self.add_widget(dhtLabel[c,0])
+                self.add_widget(dhtLabel[c,1])
+                self.add_widget(dhtLabel[c,3])
 
 ###### schedule implementation ####################################################################
 
@@ -1797,7 +1915,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.end_headers()
         with thermostatLock:
-            if testo1[8] =="DHT":
+            if testo1[9] =="DHT":
                 test = 0
                 web_dht = con.execute("select * from data where Id == 1")
                 for row in web_dht.fetchall():
@@ -1808,7 +1926,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                     ice = row[2]
                     caldaia = row[1]
                     #nome,ip,templetta,umiditaletta,pressioneletta,tipodht, statodht
-                dht = [(testo1[0],testo1[1],testo1[2],testo1[3],testo1[4],testo1[5],testo1[6],testo1[7],0)]
+                dht = [(testo1[0],testo1[1],testo1[2],testo1[3],testo1[4],testo1[5],testo1[6],testo1[7],testo1[8],0)]
                 #print dht
                 dht_test = con.execute("select * from periferiche WHERE Id == '"+testo1[0]+"'")
                 for row in dht_test.fetchall():
@@ -1816,10 +1934,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                     test += 1
                 #print test
                 if (test > 0):
-                    con.execute("UPDATE periferiche SET Id = ?,Nome = ?,Ip = ?,TempLetta = ?, UmiditaLetta = ?,PressioneLetta = ?,TipoDht = ?,StatoDht = ? , Progressivo = ? WHERE Id = ?",(testo1[0],testo1[1],testo1[2],testo1[3],testo1[4],testo1[5],testo1[6],testo1[7],0, testo1[0]))
+                    con.execute("UPDATE periferiche SET Id = ?,Nome = ?,Ip = ?,TempLetta = ?, SetTemp = ?, UmiditaLetta = ?,PressioneLetta = ?,TipoDht = ?,StatoDht = ? , Progressivo = ? WHERE Id = ?",(testo1[0],testo1[1],testo1[2],testo1[3],testo1[4],testo1[5],testo1[6],testo1[7],testo1[8],0, testo1[0]))
                     # "update"
                 else:
-                    con.executemany("INSERT INTO periferiche(Id,Nome ,Ip ,TempLetta ,UmiditaLetta ,PressioneLetta ,TipoDht ,StatoDht,Progressivo) values (?,?,?,?,?,?,?,?,?)",dht)
+                    con.executemany("INSERT INTO periferiche(Id,Nome ,Ip ,TempLetta ,SetTemp,UmiditaLetta ,PressioneLetta ,TipoDht ,StatoDht,Progressivo) values (?,?,?,?,?,?,?,?,?,?)",dht)
                     # "Salva"
                 self.wfile.write ("{\"setta\":"+ str(setta)+",\"stato\":"+str(stato)+",\"programma\":"+str(prog)+",\"manTemp\":"+str(manTemp)+",\"noIce\":"+str(ice)+",\"caldaia\":"+str(caldaia)+"}")
     def log_message(self, format, *args):
