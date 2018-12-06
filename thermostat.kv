@@ -1,6 +1,6 @@
 #: kivy 1.10.0
 
-<Manager>:
+<SManager>:
     id: screen_manager
     
     main_screen:main_screen
@@ -8,11 +8,13 @@
     meteo_screen:meteo_screen
     boot_screen:boot_screen
     summer_screen:summer_screen
+    rele_screen:rele_screen
     
     BootScreen:
         id: boot_screen
         name: 'boot'
         manager: 'screen_manager'
+    
     MainScreen:
         id: main_screen
         name: 'main'
@@ -32,3 +34,9 @@
         id: summer_screen
         name:'summer'
         manager:'screen_manager'
+    
+    ReleScreen:
+        id: rele_screen
+        name: 'rele'
+        manager: 'screen_manager'
+    
