@@ -1,0 +1,83 @@
+
+
+<ReleScreen>:
+    relewidget:relewidget
+    
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba:1,1,1,1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source:'web/images/sfondo_rele.png'
+        
+        Button:
+            text : "Ritorna"
+            size_hint:None,None
+            size:120,60
+            color:0,0,0,1
+            font_size:'20sp'
+            outline_width:2
+            outline_color:0.8,0.9,0,1
+            pos_hint:{"center_x":.22,"top":.85}
+            allow_stretch: False
+            keep_ratio: False
+            background_normal: 'web/images/pulsante_switch.png'
+            background_down: 'web/images/sistema1_1.png'
+            on_release:root.ritorna()
+        Button:
+            text: "Panic Stop"
+            size_hint:None,None
+            size:120,60
+            color:0,0,0,1
+            font_size:'20sp'
+            outline_width:2
+            outline_color:0.8,0.9,0,1
+            pos_hint:{"center_x":.53,"top":.85}
+            allow_stretch: False
+            keep_ratio: False
+            background_normal: 'web/images/pulsante_switch.png'
+            background_down: 'web/images/sistema1_1.png'
+            on_release:root.panic_stop()
+        Label:
+            text:root.rele_name
+            color:1,0,0.1,1
+            font_size:'32dp'
+            outline_width:2
+            outline_color:0.8,0.9,0,1
+            halign:'center'
+            size_hint:0.4,0.4
+            pos_hint:{"center_x":.50,"top":1.15}
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+            
+        Label:
+            text:root.rele_num
+            color:1,0,0.1,1
+            font_size:'20dp'
+            outline_width:2
+            outline_color:0.8,0.9,0,1
+            halign:'center'
+            size_hint:0.4,0.4
+            pos_hint:{"center_x":.30,"top":1.10}
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+        
+        Label:
+            text:root.releIp
+            color:1,0,0.1,1
+            font_size:'20dp'
+            outline_width:2
+            outline_color:0.8,0.9,0,1
+            halign:'center'
+            size_hint:0.4,0.4
+            pos_hint:{"center_x":.70,"top":1.10}
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+        
+        Relewidget:
+            id:relewidget

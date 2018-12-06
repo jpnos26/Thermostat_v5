@@ -13,7 +13,7 @@
             Rectangle:
                 pos: self.pos
                 size: self.size
-                source:'web/images/sfondo.png'
+                source:'web/images/sfondoe.png'
         Button:
             size_hint:None,None
             size:64,64
@@ -30,7 +30,7 @@
             pos_hint:{"center_x":.80,"top":.99}
             allow_stretch: True
             keep_ratio: False
-            background_normal: 'web/images/inverno.png'
+            background_normal: 'web/images/sole.png'
             background_down: 'web/images/sistema1_1.png'
             on_press:root.press_inverno()
         ToggleButton:
@@ -190,14 +190,16 @@
             valign:'bottom'  
         Label:
             text:root.summer_explain
-            color: 0.980, 0.815, 0.360,1
-            pos_hint:{"center_x":.5,"top":.45}
+            color: 0.980, 0, 0,1
+            pos_hint:{"center_x":.5,"top":.52}
             size: (800,20) 
             size_hint: None, None 
-            font_size:'22dp'
+            font_size:'45dp'
             markup: True
             halign:'center'
             valign:'bottom' 
+            outline_color : 0,0,1,1
+            outline_width :2
             
         Dhtview:
             id:dhtview

@@ -6,6 +6,8 @@
     main_auto:main_auto
     main_manual:main_manual
     dhtview:dhtview
+    tempgraph:tempgraph
+    releview:releview
     FloatLayout:
         canvas.before:
             Color:
@@ -30,7 +32,7 @@
             pos_hint:{"center_x":.80,"top":.99}
             allow_stretch: True
             keep_ratio: False
-            background_normal: 'web/images/sole.png'
+            background_normal: 'web/images/inverno.png'
             background_down: 'web/images/sistema1_1.png'
             on_press:root.press_estate()
         ToggleButton:
@@ -73,7 +75,7 @@
             color: 0.8,0,1,1
             font_size:'20dp'
             size_hint:0.4,0.4
-            pos_hint:{"center_x":.5,"top":.69}
+            pos_hint:{"center_x":.5,"top":.70}
             markup: True
             shorten: True
             halign:'center'
@@ -117,6 +119,13 @@
             size:52,52
             pos_hint:{"center_x":.14,"top":1}
             source:root.main_meteo
+            allow_stretch: True
+            keep_ratio: False
+        Image:
+            size_hint:None,None
+            size:30,120
+            pos_hint:{"center_x":.69,"top":.75}
+            source:root.main_tendenza
             allow_stretch: True
             keep_ratio: False
         Label:
@@ -178,18 +187,30 @@
             halign:'center'
             valign:'bottom'  
         Label:
+            canvas.before:
+                Color:
+                    rgba:.5,.5,.5,1
+                Rectangle:
+                    pos:0,100
+                    size: 800,320
+                    source: root.main_explain_image
             text:root.main_explain
-            color: 0.980, 0.815, 0.360,1
-            pos_hint:{"center_x":.5,"top":.45}
-            size: (800,20) 
+            color: 0.980, 0, 0,1
+            pos_hint:{"center_x":.5,"top":.60}
+            size: (640,50) 
             size_hint: None, None 
-            font_size:'22dp'
+            font_size:'45dp'
             markup: True
             halign:'center'
             valign:'bottom' 
-            
+            outline_color : 0,0,1,1
+            outline_width :2
         Dhtview:
             id:dhtview
+        Releview:
+            id:releview
+        Tempgraph:
+            id:tempgraph
         
 <MyPopup@Popup>:
     auto_dismiss: False
