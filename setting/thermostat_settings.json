@@ -3,7 +3,7 @@
     	"boilingMeasured": 99.998043,
     	"elevation": 500,
     	"freezingMeasured": 0.0,
-		"correctSensor":0
+		"correctSensor":-0.5
     },
     "logging": {
         "channel": "file",
@@ -42,10 +42,10 @@
     },
     "weather": {
         "appkey": "weather key",
-        "forecastRefreshInterval": 60,
+        "forecastRefreshInterval": 900,
         "location": "44.111367, 9.963093",
-        "weatherExceptionInterval": 5,
-        "weatherRefreshInterval": 60,
+        "weatherExceptionInterval": 60,
+        "weatherRefreshInterval": 900,
         "URLtimeout": 5
     },
     "web": {
@@ -56,16 +56,12 @@
         "auth": 0
     },
     "telegram":{
-    	"enabled":0,
-        "token":"telegram token",
-    	"pwd" : "telegram pwd",
+    	"enabled":1,
+        "token":"token telegram",
+    	"pwd" : "pwd telegram",
     	"timeout" : 100
     	},
-    "upnp":{
-        "enabled":0,
-        "ext_port":3400,
-        "time":100
+    "dhtconfigure": {
+        "versione" : 1
         }
-    	
-    	
 }
