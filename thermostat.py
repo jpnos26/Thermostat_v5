@@ -162,7 +162,7 @@ logger.addHandler(dh)
 
 ###### Thermostat persistent settings #############################################################
 
-THERMOSTAT_VERSION = "5.1.4"
+THERMOSTAT_VERSION = "5.1.5"
 
 # Debug settings
 
@@ -1052,31 +1052,29 @@ class MainScreen(Screen):
         with thermostatLock:
             con.execute("Update data SET ProgSistema = ?  WHERE Id = ?" ,(2,1))
             reloadSchedule()
-            Clock.schedule_once(aggiornaDht,1)
             change_system_settings()
-            self.parent.current = 'summer'
+            m.current = "summer"
         
 
 ###### la schermata per l'estate ##########################################################
 
 class SummerScreen(Screen):
     Builder.load_file('kv/summer.kv')
-    summer_time = ObjectProperty()
-    summer_date = ObjectProperty()
+    global meteo_img,meteo_text
+    summer_time = StringProperty()
+    summer_date = StringProperty()
     summer_umidita = StringProperty()
     summer_setTemp = StringProperty()
     summer_temp = ObjectProperty()
-    summer_auto = ObjectProperty()
-    summer_manual = ObjectProperty()
     summer_meteo = StringProperty()
     summer_meteo_text = StringProperty()
     summer_caldaia = StringProperty()
-    summer_slider_color = NumericProperty()
+    slider_color = NumericProperty()
     summer_explain = StringProperty()
     summer_set_setTemp = StringProperty()
     summer_state = NumericProperty()
     summer_next = StringProperty()
-    summer_off = NumericProperty()
+    summer_tendenza = StringProperty()
     start_off = 0
 
     def on_pre_enter(self):
@@ -1092,15 +1090,30 @@ class SummerScreen(Screen):
     def on_leave(self):
         Clock.unschedule(self.crono)
         Clock.unschedule(self.minimize_screen)
-        Builder.unload_file('kv/summer.kv')
+        self.releview.rimuovi()
 
     def crono(self,*args):
         with thermostatLock:
-            self.summer_time.text = time.strftime("%H : %M").lower()
-            self.summer_date.text = time.strftime("%d - %B - %Y").lower()
+            self.summer_time = time.strftime("%H : %M").lower()
+            self.summer_date = time.strftime("%d - %B - %Y").lower()
             self.summer_explain = ""
+            self.summer_state == 0
             data_summer = con.execute("select * from data where Id == 1")
             for row in data_summer.fetchall():
+                if (row[5] != None):
+                    self.summer_umidita = str(int(row[5]))+" % - "+str(int(row[6]))+" mBar"
+                else:
+                    self.summer_umidita =""
+                if row[4] > row[14]:
+                    self.summer_tendenza = "web/images/tendenzasu1.png"
+                #elif (row[14] >= 0.31):
+                #    self.main_tendenza = "web/images/tendenzasu2.png"
+                elif (row[4] < row[14]):
+                    self.summer_tendenza = "web/images/tendenzagiu1.png"
+                #elif (row[14] <= -0.31):
+                #    self.main_tendenza = "web/images/tendenzagiu2.png"
+                else:
+                    self.summer_tendenza = "web/images/tendenzauguale.png"
                 if row[4] == 100:
                     self.summer_temp.text = "-.-"
                 else:
@@ -1111,64 +1124,78 @@ class SummerScreen(Screen):
                 else:
                     self.summer_umidita =""
                 self.summer_temp.text = str(row[4])+"°"
-                self.summer_slider_color = row[1]
+                self.slider_color = row[1]
                 if (row[8] == 1):
-                    self.summer_auto.state = 'down'
-                    self.summer_manual.state = 'normal'
-                    self.summer_setTemp = str(round(row[3],0))
-                    self.summer_next = "{:0>2d}".format(schedule.next_run().hour)+":"+"{:0>2d}".format(schedule.next_run().minute)+" --> "+str(min(schedule.jobs))[str(min(schedule.jobs)).find("(")+1:str(min(schedule.jobs)).find(")")]
+                    self.summer_setTemp = str(round(row[3],1))
+                    self.summer_state = 1
+                    try:
+                        self.summer_explain = "[color=#fca62c]- Auto -[/color]"
+                        self.summer_next = "[size=12] {:0>2d}".format(schedule.next_run().hour)+":"+"{:0>2d}".format(schedule.next_run().minute)+" --> "+str(min(schedule.jobs))[str(min(schedule.jobs)).find("(")+1:str(min(schedule.jobs)).find(")")]+"[/size]"
+                    except:
+                        self.summer_next = "No Schedule"
                     self.summer_state = 1
                 elif (row[8] == 2):
-                    self.summer_manual.state = 'down'
-                    self.summer_auto.state = 'normal'
-                    self.summer_setTemp = str(round(row[10],0))
+                    self.summer_explain = "[color=#19df07]- Manuale -[/color]"
+                    self.summer_setTemp = str(round(row[10],1))
                     self.summer_next = ""
-                    self.summer_state = 1
+                    self.summer_state = 2
+                elif (row[8] == 3):
+                    self.summer_explain = "[color=#fcef55]- NoIce -[/color]"
+                    self.summer_setTemp = str(round(row[2],1))
+                    self.summer_next = ""
+                    self.summer_state = 3
                 else :
-                    self.summer_manual.state = 'normal'
-                    self.summer_auto.state = 'normal'
                     self.summer_setTemp = "OFF"
                     self.summer_next = ""
-                    self.summer_state = 0
-                if (row[7] == 0 ):
-                    self.summer_programma = "OFF"
-                elif (row[7] == 1 ):
-                    self.summer_programma = "Inverno"
-            dht_summer = con.execute("select * from periferiche WHERE TipoDht == 2")
-            self.summer_explain_dht = ""
-            for row in dht_summer:
-                self.summer_explain_dht += row[1] +"[b] : "+str(row[3])+"c[/b]\n"
+                    self.summer_state = 10
+            self.remove_widget(self.dhtview)
+            self.remove_widget(self.releview)
             self.dhtview.disegna_schermo()
-            # row
-        ## timeb,self
+            self.releview.disegna_schermo()
+            self.tempgraph.graph()
 
     def update_schema(self, dato):
         with thermostatLock:
-            #self.main_explain = "Sistema in Aggiornamento......"
-            if dato <= 3 :
+            if dato <= 4 :
                 con.execute("Update data  SET StatoSistema = ?, ProgSistema = ?  WHERE Id = ?" ,(dato,2,1))
                 reloadSchedule()
                 Clock.schedule_once(self.crono,0)
                 change_system_settings()
-                aggiornaDht(0.1)
                 Clock.schedule_once(save_graph, .1)
+                Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
                 save_state()
+            
+            elif dato == 7:
+                con.execute("UPDATE data SET StatoSistema =?, ProgSistema = ? WHERE Id = ?",(0,0,1))
+                change_system_settings()
+                Clock.schedule_once(save_graph, .1)
+                Clock.schedule_interval(self.crono,0)
+                Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
+                save_state()
+
+            elif dato == 8:
+                log(LOG_LEVEL_STATE, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/exit", "Thermostat exit on call...", single=True)
+                if logFile is not None:
+                    logFile.flush()
+                    os.fsync(logFile.fileno())
+                    logFile.close()
+                exit()  # This does not return!!!
 
     def update_temp(self,dato):
         with thermostatLock:
-            registra = round(float(dato),1)
+            rregistra = round(float(dato),1)
+            evento = self.summer_state
             #self.main_explain = "Sistema in Aggiornamento......"
-            if self.summer_manual.state == "down":
-                con.execute("Update data SET ManTemp = ? WHERE Id = ?" ,(registra,1))
-            elif self.summer_auto.state == "down":
-                con.execute("Update data SET SetTemp = ? , ManTemp = ? WHERE Id = ?" ,(registra,registra,1))
+            if evento == 1:
+                con.execute("Update data  SET SetTemp = ?, StatoSistema = ?, ProgSistema = ?  WHERE Id = ?" ,(dato,1,2,1))
+            elif evento == 2:
+                con.execute("Update data  SET ManTemp = ?, StatoSistema = ?, ProgSistema = ?  WHERE Id = ?" ,(dato,2,2,1))
+            reloadSchedule()
             Clock.schedule_once(self.crono,0)
             change_system_settings()
-            aggiornaDht(0.1)
             Clock.schedule_once(save_graph, .1)
-            Clock.schedule_interval(self.crono,3)
             Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
-            save_state()
+            save_state()   
 
     def minimize_screen(self ,*args):
         with thermostatLock:
@@ -1181,19 +1208,32 @@ class SummerScreen(Screen):
             self.summer_set_setTemp = self.summer_setTemp
             #Clock.schedule_interval(self.crono,3)
 
+    def switch(self,dato):
+        self.summer_state = dato
+        data_main = con.execute("select * from data where Id == 1")
+        for row in data_main.fetchall():
+            if dato == 1:
+                self.summer_set_setTemp = str(row[3])
+            elif dato == 2:
+                self.summer_set_setTemp = str(row[10])
+            elif dato == 3:
+                self.summer_set_setTemp = str(row[2])
+    
+    
     def popup(self,dato):
         test1 = self.summer_set_setTemp
         test2 = 15.0 if not (settings.exists("thermostat")) else settings.get("thermostat")["minTemp"]
         test3 = 30.0 if not (settings.exists("thermostat")) else settings.get("thermostat")["maxTemp"]
         #print(repr(test1))
-        test = round(float(test1),1)
-        test_finale = test + dato
-        if test_finale <= test2:
-            self.summer_set_setTemp = str(test2)
-        elif test_finale >= test3:
-            self.summer_set_setTemp = str(test3)
-        else:
-            self.summer_set_setTemp = str(test_finale)
+        if test1 != "OFF":
+            test = round(float(test1),1)
+            test_finale = round(float(test + dato),1)
+            if test_finale <= test2:
+                self.summer_set_setTemp = str(test2)
+            elif test_finale >= test3:
+                self.summer_set_setTemp = str(test3)
+            else:
+                self.summer_set_setTemp = str(test_finale)
 
     def press_off_time(self, *args):
         if self.start_off <=5:
@@ -1202,49 +1242,14 @@ class SummerScreen(Screen):
             self.summer_explain = "Chiudo Thermostat Ritorno al Sistema Operativo ......"
         self.start_off +=1
 
-    def press_off(self,dato):
-        with thermostatLock:
-            if dato == 1:
-                Clock.unschedule(self.crono)
-                Clock.unschedule(self.minimize_screen)
-                Clock.schedule_once(self.press_off_time,0)
-                Clock.schedule_interval(self.press_off_time,1)
-            elif dato == 2:
-                Clock.unschedule(self.press_off_time)
-                #print self.start_off
-                if self.start_off >= 5:
-                    log(LOG_LEVEL_STATE, CHILD_DEVICE_NODE, MSG_SUBTYPE_CUSTOM + "/exit", "Thermostat exit on call...", single=True)
-
-                    if logFile is not None:
-                        logFile.flush()
-                        os.fsync(logFile.fileno())
-                        logFile.close()
-
-                    exit()  # This does not return!!!
-
-                else  :
-                    self.main_explain = "Spengo Sistema......"
-                    con.execute("UPDATE data SET StatoSistema =?, ProgSistema = ? WHERE Id = ?",(0,0,1))
-                    change_system_settings()
-                    aggiornaDht(0.1)
-                    Clock.schedule_once(save_graph, .1)
-                    Clock.schedule_interval(self.crono,3)
-                    Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
-                    save_state()
-                Clock.schedule_once(self.crono,0)
-                Clock.schedule_once(save_graph, .1)
-                Clock.schedule_interval(self.crono,3)
-                Clock.schedule_once(self.minimize_screen,20 if not (settings.exists("thermostat")) else settings.get("thermostat")["minUITimeout"])
-                self.start_off = 0
+    
 
     def press_inverno(self):
         with thermostatLock:
             con.execute("Update data SET ProgSistema = ?  WHERE Id = ?" ,(1,1))
             reloadSchedule()
-            aggiornaDht(0.1)
             change_system_settings()
-            Clock.schedule_once(save_graph, .1)
-            self.parent.current = 'main'
+            m.current = 'main'
 
 ###### la schermata mini ##########################################################################
 

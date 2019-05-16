@@ -1,11 +1,10 @@
-<SummerScreen>: 
-    summer_time:summer_time
-    summer_date:summer_date
-    summer_temp:summer_temp
-    summer_auto:summer_auto
-    summer_manual:summer_manual
+#:import Factory kivy.factory.Factory
+
+<SummerScreen>:
+    summer_temp:summer_temp 
     dhtview:dhtview
-    
+    tempgraph:tempgraph
+    releview:releview    
     FloatLayout:
         canvas.before:
             Color:
@@ -14,47 +13,18 @@
                 pos: self.pos
                 size: self.size
                 source:'web/images/sfondoe.png'
+        
+           
         Button:
             size_hint:None,None
-            size:64,64
-            pos_hint:{"center_x":.93,"top":.99}
-            allow_stretch: False
-            keep_ratio: False
-            background_normal: 'web/images/off.png'
-            background_down: 'web/images/sistema1_1.png'
-            on_press:root.press_off(1)
-            on_release:root.press_off(2)
-        Button:
-            size_hint:None,None
-            size:64,64
-            pos_hint:{"center_x":.80,"top":.99}
+            size:50,50
+            pos_hint:{"center_x":.90,"top":.98}
             allow_stretch: True
             keep_ratio: False
-            background_normal: 'web/images/sole.png'
-            background_down: 'web/images/sistema1_1.png'
-            on_press:root.press_inverno()
-        ToggleButton:
-            text: 'Auto'
-            id:summer_auto
-            state:'normal'
-            font_size:'40dp'
-            group: 'Switch'
-            pos_hint:{"center_x":.87,"top":.78}
-            size_hint:0.15,0.15
-            background_normal: 'web/images/pulsante_switch.png'
-            background_down: 'web/images/pulsante_switch_1.png'
-            on_press: root.update_schema(1)
-        ToggleButton:
-            text: 'Man'
-            id:summer_manual
-            state:'normal'
-            font_size:'40dp'
-            group: 'Switch'
-            pos_hint:{"center_x":.87,"top":.58}
-            size_hint:0.15,0.15
-            background_normal: 'web/images/pulsante_switch.png'
-            background_down: 'web/images/pulsante_switch_1.png'
-            on_press: root.update_schema(2)
+            background_normal: 'web/images/sistema.png'
+            background_down:'web/mages/sistema1_1.png'
+            on_press:root.anti_minimize()
+            on_release:Factory.SystemSummer().open() 
         
         Label:
             text:"[b]19.1°[/b]"
@@ -62,10 +32,11 @@
             font_size:'110dp'
             outline_width:2
             outline_color:0.8,0.9,0,1
+            title_align: 'center'
             halign:'center'
             id:summer_temp
             size_hint:0.4,0.4
-            pos_hint:{"center_x":.51,"top":.85}
+            pos_hint:{"center_x":.51,"top":.93}
             markup: True
             shorten: True
             ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
@@ -74,80 +45,89 @@
             color: 0.8,0,1,1
             font_size:'20dp'
             size_hint:0.4,0.4
-            pos_hint:{"center_x":.5,"top":.69}
+            pos_hint:{"center_x":.5,"top":.78}
             markup: True
             shorten: True
             halign:'center'
             ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
         Label:
-            id:summer_date
-            text:"[b]12/04/2018[/b]"
-            color:0.9,0.5,0.3,1
-            outline_width:1
-            outline_color:0.1,0.1,0.1,1
-            font_size:'25dp'
-            size_hint:[None,None]
-            pos_hint:{"center_x":.5,"top":1.07}
-            halign:'center'
-            markup: True
-            shorten: True
-            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
-        Label:
-            id:summer_time 
-            text:'10.20'
-            color: 0.1,0.1,0.1,1
-            font_size:'50dp'
-            size_hint:[None,None]
-            pos_hint:{"center_x":.5,"top":0.98}
+            text:root.summer_time
+            color:0.956, 0.564, 0.082,1
             outline_width:2
-            outline_color:0.9,0.5,0.3,1
+            outline_color:0.019, 0.117, 0.580,1
+            font_size:'45dp'
+            size_hint:[None,None]
+            pos_hint:{"center_x":.5,"top":1.05}
             halign:'center'
+            markup: True
+            shorten: True
+            ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
+        Label:
+            text:root.summer_date
+            color:0.925, 0.686, 0.035,1
+            outline_width:2
+            outline_color:0.019, 0.117, 0.580,1
+            font_size:'20dp'
+            size_hint:[None,None]
+            pos_hint:{"center_x":.15,"top":1.05}
+            halign:'left'
             markup: True
             shorten: True
             ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
         Button:
             size_hint:None,None
             size:200,150
-            pos_hint:{"center_x":.14,"top":.97}
+            pos_hint:{"center_x":.14,"top":.92}
             allow_stretch: True
             keep_ratio: False
             background_normal: 'web/images/meteo.png'
+            background_down: 'web/images/down.png'
             on_press:app.root.current = 'meteo'
         Image:
             size_hint:None,None
             size:52,52
-            pos_hint:{"center_x":.14,"top":1}
+            pos_hint:{"center_x":.14,"top":.90}
             source:root.summer_meteo
+            allow_stretch: True
+            keep_ratio: False
+        Image:
+            size_hint:None,None
+            size:30,120
+            pos_hint:{"center_x":.69,"top":.82}
+            source:root.summer_tendenza
             allow_stretch: True
             keep_ratio: False
         Label:
             text:root.summer_meteo_text
             color: 1,0.8,.8,1
-            font_size:'18dp'
+            font_size:'20dp'
             size_hint:[None,None]
-            pos_hint:{"center_x":.14,"top":.9}
+            pos_hint:{"center_x":.14,"top":.80}
             halign:'center'
             markup: True
             shorten: True
             ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
-            
+
         Label:
             text:root.summer_explain
-            color: 1,0.8,0.8,1
-            pos_hint:{"center_x":.5,"top":.1}
-            size: (800,20) 
+            color:0.925, 0.686, 0.035,1
+            outline_width:2
+            outline_color:0.019, 0.117, 0.580,1
+            font_size:'23dp'
+            pos_hint:{"center_x":.87,"top":.9}
+            size: self.texture_size 
             size_hint: None, None 
-            font_size:'20dp'
+            size:(50,100)
             markup: True
             halign:'center'
             valign:'bottom' 
         Label:
             text:"Set Temperatura"
             color: 1,0.8,0.8,1
-            pos_hint:{"center_x":.12,"top":.74}
+            pos_hint:{"center_x":.87,"top":.64}
             size: self.texture_size 
             size_hint: None, None 
-            size:(50,100)
+            size:(100,20)
             markup: True
             halign:'center'
             valign:'bottom' 
@@ -159,76 +139,77 @@
                     pos: self.pos
                     size: self.size
             text:root.summer_setTemp + "°" if root.summer_state == 1 else root.summer_setTemp
-            color: (1,0.1,0.1,1) if root.summer_slider_color == 1 else (0.1,1,0.1,1)
+            color: (1,0.1,0.1,1) if root.slider_color == 1 else (0.1,1,0.1,1)
             outline_width:2
-            outline_color:(0.8,0.9,0,1) if root.summer_slider_color == 1 else (.2,.2,1,1)
+            outline_color:(0.8,0.9,0,1) if root.slider_color == 1 else (.2,.2,1,1)
             halign:'center'
             size_hint:0.4,0.4
-            pos_hint:{"center_x":.13,"top":.73}
+            pos_hint:{"center_x":.88,"top":.90}
             size: self.texture_size 
             font_size:'60dp'
             markup: True
             valign:'bottom' 
         Button:
             size_hint:None,None
-            size:200,150
-            pos_hint:{"center_x":.12,"top":.65}
+            size:180,100
+            title_align: 'center'
+            pos_hint:{"center_x":.87,"top":.80}
             allow_stretch: True
             keep_ratio: False
             background_normal: 'web/images/meteo.png'
+            background_down: 'web/images/down.png'
             on_press:root.anti_minimize()
-            on_release:Factory.SummerPop().open() if root.summer_state != 0 else root.update_schema(4)
-        Label:
-            text:root.summer_next
-            color: 1,0.8,0.8,1
-            pos_hint:{"center_x":.87,"top":.88}
-            size: self.texture_size 
-            size_hint: None, None 
-            size:(50,100)
-            markup: True
-            halign:'center'
-            valign:'bottom'  
-        Label:
-            text:root.summer_explain
-            color: 0.980, 0, 0,1
-            pos_hint:{"center_x":.5,"top":.52}
-            size: (800,20) 
-            size_hint: None, None 
-            font_size:'45dp'
-            markup: True
-            halign:'center'
-            valign:'bottom' 
-            outline_color : 0,0,1,1
-            outline_width :2
-            
+            on_release:Factory.Summer().open() 
+        
+        
         Dhtview:
             id:dhtview
+        Releview:
+            id:releview
+        Tempgraph:
+            id:tempgraph
         
-<SummerPop@Popup>:
+<Summer@Popup>:
     auto_dismiss: False
-    size_hint:0.8,0.7
-    pos_hint:{"center_x":.5,"top":.8}
-    title: "Set Temperatura"
+    size_hint:0.8,0.8
+    pos_hint:{"center_x":.5,"top":.9}
+    title: "Setting"
     title_align: 'center'
     title_size:'30dp'
+    background:"web/images/boot.png"
     FloatLayout:
         Button:
             size_hint:None,None
             size:64,64
-            pos_hint:{"center_x":.20,"top":.75}
-            allow_stretch: 
+            pos_hint:{"center_x":.05,"top":.85}
+            allow_stretch: True
             keep_ratio: False
-            background_normal: 'web/images/meno.png'
+            background_normal: 'web/images/menomeno.png'
             on_press: app.root.summer_screen.popup(-1)
         Button:
             size_hint:None,None
             size:64,64
-            pos_hint:{"center_x":.80,"top":.75}
+            pos_hint:{"center_x":.20,"top":.85}
+            allow_stretch: 
+            keep_ratio: False
+            background_normal: 'web/images/meno.png'
+            on_press: app.root.summer_screen.popup(-0.1)
+        Button:
+            size_hint:None,None
+            size:64,64
+            pos_hint:{"center_x":.80,"top":.85}
             allow_stretch: True
             keep_ratio: False
             background_normal: 'web/images/piu.png'
+            on_press: app.root.summer_screen.popup(0.1)
+        Button:
+            size_hint:None,None
+            size:64,64
+            pos_hint:{"center_x":.95,"top":.85}
+            allow_stretch: True
+            keep_ratio: False
+            background_normal: 'web/images/piupiu.png'
             on_press: app.root.summer_screen.popup(1)
-        
         Label:
             text:app.root.summer_screen.summer_set_setTemp
             id:set
@@ -238,18 +219,105 @@
             outline_color:0.8,0.9,0,1
             halign:'center'
             size_hint:0.4,0.4
-            pos_hint:{"center_x":.51,"top":.85}
+            pos_hint:{"center_x":.51,"top":.95}
             markup: True
             shorten: True
             ellipsis_options: {'color':(1,0.5,0.5,1),'underline':True}
-        Button:
-            text: 'Set'
+        ToggleButton:
+            text: 'Auto'
+            group:'setstate'
+            state:'down' if app.root.summer_screen.summer_state == 1 else 'normal'
             size_hint:None,None
             font_size:'30dp'
-            size:120,64
-            pos_hint:{"center_x":.5,"top":.3}
+            background_normal: 'web/images/normal.png'
+            background_down: 'web/images/down.png'
+            size:125,67
+            pos_hint:{"center_x":.3,"top":.55}
+            allow_stretch: True
+            keep_ratio: False
+            on_press:app.root.summer_screen.switch(1)
+            
+        ToggleButton:
+            text: 'Manuale'
+            group:'setstate'
+            background_normal: 'web/images/normal.png'
+            background_down: 'web/images/down.png'
+            state:'down' if app.root.summer_screen.summer_state == 2 else 'normal'
+            size_hint:None,None
+            font_size:'30dp'
+            size:125,67
+            pos_hint:{"center_x":.7,"top":.55}
+            allow_stretch: True
+            keep_ratio: False
+            on_press:app.root.summer_screen.switch(2)
+            
+            
+        Button:
+            text: 'Set'
+            background_normal: 'web/images/set.png'
+            background_down: 'web/images/down.png'
+            size_hint:None,None
+            font_size:'30dp'
+            size:200,67
+            pos_hint:{"center_x":.5,"top":.25}
             allow_stretch: True
             keep_ratio: False
             on_press:app.root.summer_screen.update_temp(set.text)
             on_release: root.dismiss()
-
+            
+<SystemSummer@Popup>:
+    auto_dismiss: False
+    size_hint:0.8,0.8
+    pos_hint:{"center_x":.5,"top":.9}
+    title: "Menu"
+    title_align: 'center'
+    title_size:'30dp'
+    background:"web/images/boot.png"
+    FloatLayout:
+        Button:
+            text: 'Inverno'
+            background_normal: 'web/images/set.png'
+            background_down: 'web/images/down.png'
+            allow_stretch: True
+            keep_ratio: False
+            size_hint:None,None
+            font_size:'30dp'
+            size:125,67
+            pos_hint:{"center_x":.5,"top":.7}
+            on_press:app.root.summer_screen.press_inverno()
+            on_release: root.dismiss()
+        Button:
+            text: 'Spegni'
+            background_normal: 'web/images/set.png'
+            background_down: 'web/images/down.png'
+            allow_stretch: True
+            keep_ratio: False
+            size_hint:None,None
+            font_size:'30dp'
+            size:125,67
+            pos_hint:{"center_x":.2,"top":.7}
+            on_press: app.root.summer_screen.update_schema(7)
+            on_release: root.dismiss()
+        Button:
+            text: 'Uscita'
+            background_normal: 'web/images/set.png'
+            background_down: 'web/images/down.png'
+            allow_stretch: True
+            keep_ratio: False
+            size_hint:None,None
+            font_size:'30dp'
+            size:125,67
+            pos_hint:{"center_x":.8,"top":.7}
+            on_press: app.root.summer_screen.update_schema(8)
+            on_release: root.dismiss() 
+        Button:
+            text: 'Annulla'
+            background_normal: 'web/images/set.png'
+            background_down: 'web/images/down.png'
+            allow_stretch: True
+            keep_ratio: False
+            size_hint:None,None
+            font_size:'30dp'
+            size:200,67
+            pos_hint:{"center_x":.5,"top":.3}
+            on_press: root.dismiss()    
