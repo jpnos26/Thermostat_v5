@@ -1,9 +1,9 @@
 
 #:import math math
 
-[ClockNumber@Label]:
-    text: str(ctx.i)
-    pos_hint: {"center_x": 0.5+0.42*math.sin(math.pi/6*(ctx.i-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(ctx.i-12))}
+<ClockNumber@Label>:
+    text: ''
+    pos_hint: {}
     color: .2,0.5,.5,.4
     font_size:'25dp'
 
@@ -24,29 +24,42 @@
                 size: self.size     
                 pos: self.pos
         ClockNumber:
-            i: 1
+            
+            text:'1'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(1-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(1-12))}
         ClockNumber:
-            i: 2
+            text:'2'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(2-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(2-12))}
         ClockNumber:
-            i: 3
+            text:'3'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(3-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(3-12))}
         ClockNumber:
-            i: 4
+            text:'4'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(4-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(4-12))}
         ClockNumber:
-            i: 5
+            text:'5'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(5-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(5-12))}
         ClockNumber:
-            i: 6
+            text:'6'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(6-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(6-12))}
         ClockNumber:
-            i: 7
+            text:'7'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(7-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(7-12))}
         ClockNumber:
-            i: 8
+            text:'8'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(8-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(8-12))}
         ClockNumber:
-            i: 9
+            text:'9'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(9-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(9-12))}
         ClockNumber:
-            i: 10
+            text:'10'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(10-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(10-12))}
         ClockNumber:
-            i: 11
+            text:'11'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(11-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(11-12))}
         ClockNumber:
-            i: 12
+            text:'12'
+            pos_hint:{"center_x": 0.5+0.42*math.sin(math.pi/6*(12-12)), "center_y": 0.5+0.42*math.cos(math.pi/6*(12-12))}
         Label:
             id:label_data
             text:root.min_data
